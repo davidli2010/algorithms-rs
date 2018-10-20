@@ -94,6 +94,18 @@ impl<T> LinkedList<T> {
             size: 0,
         }
     }
+
+    pub fn iter(&self) -> Iter<T> {
+        Iter {
+            next: self.head.as_ref().map(|head| head.as_ref()),
+        }
+    }
+
+    pub fn iter_mut(&mut self) -> IterMut<T> {
+        IterMut {
+            next: self.head.as_mut().map(|head| head.as_mut()),
+        }
+    }
 }
 
 impl<T> List<T> for LinkedList<T> {
@@ -160,6 +172,42 @@ impl<T> Drop for LinkedList<T> {
     }
 }
 
+pub struct Iter<'a, T: 'a> {
+    next: Option<&'a Node<T>>,
+}
+
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<&'a T> {
+        self.next.take().map(|node| {
+            match node.next.as_ref() {
+                None => self.next = None,
+                Some(next) => self.next = Some(&next),
+            };
+            &node.elem
+        })
+    }
+}
+
+pub struct IterMut<'a, T: 'a> {
+    next: Option<&'a mut Node<T>>,
+}
+
+impl<'a, T> Iterator for IterMut<'a, T> {
+    type Item = &'a mut T;
+
+    fn next(&mut self) -> Option<&'a mut T> {
+        self.next.take().map(|node| {
+            match node.next.as_mut() {
+                None => self.next = None,
+                Some(next) => self.next = Some(next),
+            };
+            &mut node.elem
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -201,5 +249,45 @@ mod tests {
         assert_eq!(list.non_empty(), false);
         assert_eq!(list.pop_front(), None);
         assert_eq!(list.pop_back(), None);
+    }
+
+    #[test]
+    fn test_iter() {
+        let mut list = LinkedList::new();
+        list.push_back(10);
+        list.push_back(20);
+        list.push_back(30);
+        list.push_back(40);
+        list.push_back(50);
+
+        for (i, v) in list.iter().enumerate() {
+            assert_eq!(*v, 10 * (i + 1) as i32);
+        }
+
+        assert_eq!(5, list.iter().count());
+    }
+
+    #[test]
+    fn test_iter_mut() {
+        let mut list = LinkedList::new();
+        list.push_back(10);
+        list.push_back(20);
+        list.push_back(30);
+        list.push_back(40);
+        list.push_back(50);
+
+        for (i, v) in list.iter_mut().enumerate() {
+            assert_eq!(*v, 10 * (i as i32 + 1));
+        }
+
+        assert_eq!(5, list.iter().count());
+
+        for i in list.iter_mut() {
+            *i += 5;
+        }
+
+        for (i, v) in list.iter_mut().enumerate() {
+            assert_eq!(*v, 10 * (i as i32 + 1) + 5);
+        }
     }
 }
