@@ -36,6 +36,4 @@ pub trait List<T> {
     fn clear(&mut self);
 }
 
-mod linked_list;
-
-pub use linked_list::LinkedList;
+pub mod linked_list;
