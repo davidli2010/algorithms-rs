@@ -25,8 +25,8 @@ impl<T> LinkedBag<T> {
         }
     }
 
-    pub fn iter(&self) -> Iter<T> {
-        Iter {
+    pub fn iter(&self) -> LinkedIter<T> {
+        LinkedIter {
             iter: self.list.iter(),
         }
     }
@@ -44,11 +44,11 @@ impl<T> Bag<T> for LinkedBag<T> {
     }
 }
 
-pub struct Iter<'a, T: 'a> {
+pub struct LinkedIter<'a, T: 'a> {
     iter: list::linked_list::Iter<'a, T>,
 }
 
-impl<'a, T> Iterator for Iter<'a, T> {
+impl<'a, T> Iterator for LinkedIter<'a, T> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<&'a T> {
