@@ -35,6 +35,24 @@ pub fn bubble_sort<T: PartialOrd + Copy>(a: &mut [T]) {
     }
 }
 
+fn insertion_sort_interval<T: PartialOrd + Copy>(a: &mut [T], interval: usize) {
+    debug_assert!(interval <= a.len());
+
+    for i in interval..a.len() {
+        let x = a[i];
+        let mut j = (i - interval) as i32;
+        while j >= 0 {
+            if a[j as usize] > x {
+                a[j as usize + interval] = a[j as usize];
+                j = j - interval as i32;
+            } else {
+                break;
+            }
+        }
+        a[(j + interval as i32) as usize] = x;
+    }
+}
+
 pub fn insertion_sort<T: PartialOrd + Copy>(a: &mut [T]) {
     let n = a.len();
 
@@ -42,18 +60,24 @@ pub fn insertion_sort<T: PartialOrd + Copy>(a: &mut [T]) {
         return;
     }
 
-    for i in 1..n {
-        let x = a[i];
-        let mut j = i as i32 - 1;
-        while j >= 0 {
-            if a[j as usize] > x {
-                a[j as usize + 1] = a[j as usize];
-                j = j - 1;
-            } else {
-                break;
-            }
-        }
-        a[(j + 1) as usize] = x;
+    insertion_sort_interval(a, 1);
+}
+
+pub fn shell_sort<T: PartialOrd + Copy>(a: &mut [T]) {
+    let n = a.len();
+
+    if n <= 1 {
+        return;
+    }
+
+    let mut interval = 1usize;
+    while interval < n / 3 {
+        interval = interval * 3 + 1;
+    }
+
+    while interval >= 1 {
+        insertion_sort_interval(a, interval);
+        interval = interval / 3;
     }
 }
 
@@ -152,6 +176,17 @@ mod tests {
 
         let mut v = vec![5, 4, 3, 2, 1];
         insertion_sort(&mut v);
+        assert_eq!(v, vec![1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn test_shell_sort() {
+        let mut v = vec![4, 3, 5, 1, 2];
+        shell_sort(&mut v);
+        assert_eq!(v, vec![1, 2, 3, 4, 5]);
+
+        let mut v = vec![5, 4, 3, 2, 1];
+        shell_sort(&mut v);
         assert_eq!(v, vec![1, 2, 3, 4, 5]);
     }
 
